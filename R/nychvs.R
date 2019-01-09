@@ -4,7 +4,7 @@ get_catalog_nychvs <-
 		catalog <- NULL
 
 		# hardcoded catalog because nychvs will be incorporated into ahs going forward
-		for( year in c( 2002 , 2005 , 2008 , 2011 , 2014 ) ){
+		for( year in c( 2002 , 2005 , 2008 , 2011 , 2014 , 2017) ){
 		
 			# create three year-specific variables:
 			
@@ -45,7 +45,8 @@ get_catalog_nychvs <-
 							( year == 2011 & filetype == 'vac' ) | ( year == 2014 & filetype != 'vac' ) , 
 							".txt" , 
 							".dat" 
-						)
+						),
+						ifelse( year == 2017, "_b.txt", "")
 					)
 
 				# the `census.url` object now contains the complete filepath
@@ -62,15 +63,26 @@ get_catalog_nychvs <-
 				} else {
 
 					# set the import script begin lines.
-					if( filetype == 'occ' ) {
+					if(year == 2014 & filetype == 'occ' ) {
 						beginline <- 9 
-					} else if ( filetype == 'vac' ) {
+					} else if (year == 2014 & filetype == 'vac' ) {
 						beginline <- 561 
-					} else if ( filetype == 'pers' ){
+					} else if (year == 2014 & filetype == 'pers' ){
 						beginline <- 413
+					} else if (year == 2017 & filetype == 'occ'){
+                				beginline <- 10
+          				} else if (year == 2017 & filetype == 'pers'){
+                				beginline <- 579
+          				} else if (year == 2017 & filetype == 'vac'){
+                				beginline <- 890
 					} else stop( "this filetype hasn't been implemented yet." )
 					
-					sas_script <- paste0( "https://www2.census.gov/programs-surveys/nychvs/datasets/" , year , "/microdata/sas_import_program.txt" )
+					if (year == 2014){
+                				sas_script <- "https://www2.census.gov/programs-surveys/nychvs/datasets/2014/microdata/sas_import_program.txt"
+          				} else if ( year == 2017){
+               					 sas_script <- "https://www2.census.gov/programs-surveys/nychvs/datasets/2017/microdata/sas_import_program_17.txt"
+          				} else stop("Error. Unknown Year")
+        					}
 					
 				}
 
