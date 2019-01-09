@@ -4,7 +4,7 @@ get_catalog_nychvs <-
 		catalog <- NULL
 
 		# hardcoded catalog because nychvs will be incorporated into ahs going forward
-		for( year in c( 2002 , 2005 , 2008 , 2011 , 2014 ) ){
+		for( year in c( 2002 , 2005 , 2008 , 2011 , 2014 , 2017) ){
 		
 			# create three year-specific variables:
 			
@@ -40,11 +40,12 @@ get_catalog_nychvs <-
 							'_rev' , 
 							'_web' 
 						) , 
+						ifelse( year == 2017, "_b.txt" , ""),
 						ifelse( year == 2014 & filetype != 'vac' , "_b" , "" ) ,
 						ifelse( 
 							( year == 2011 & filetype == 'vac' ) | ( year == 2014 & filetype != 'vac' ) , 
 							".txt" , 
-							".dat" 
+							".dat" ) 
 						)
 					)
 
@@ -62,15 +63,24 @@ get_catalog_nychvs <-
 				} else {
 
 					# set the import script begin lines.
-					if( filetype == 'occ' ) {
+					if( filetype == 'occ' & year == 2014) {
 						beginline <- 9 
-					} else if ( filetype == 'vac' ) {
+					} else if ( filetype == 'vac' & year == 2014) {
 						beginline <- 561 
-					} else if ( filetype == 'pers' ){
+					} else if ( filetype == 'pers' & year == 2014){
 						beginline <- 413
+					} else if ( filetype == 'occ' & year == 2017){
+						beginline <- 10
+					} else if ( filetype == 'pers' & year == 2017){
+						beginline <- 579
+					} else if ( filetype == 'pers' & year == 2017){
+						beginline <- 890
 					} else stop( "this filetype hasn't been implemented yet." )
 					
-					sas_script <- paste0( "https://www2.census.gov/programs-surveys/nychvs/datasets/" , year , "/microdata/sas_import_program.txt" )
+					sas_script <- ifelse( year == 2014, 
+							     paste0( "https://www2.census.gov/programs-surveys/nychvs/datasets/" , 
+								    year , "/microdata/sas_import_program.txt" ), 
+							     "https://www2.census.gov/programs-surveys/nychvs/datasets/2017/microdata/sas_import_program_17.txt")
 					
 				}
 
