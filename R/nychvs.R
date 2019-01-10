@@ -1,118 +1,86 @@
 get_catalog_nychvs <-
-	function( data_name = "nychvs" , output_dir , ... ){
-
-		catalog <- NULL
-
-		# hardcoded catalog because nychvs will be incorporated into ahs going forward
-		for( year in c( 2002 , 2005 , 2008 , 2011 , 2014 , 2017) ){
-		
-			# create three year-specific variables:
-			
-			# the last two digits of the current year
-			subyear <- substr( year , 3 , 4 )
-			
-			# they started naming things differently in 2011
-			if( year >= 2011 ) {
-				filetypes <- c( 'occ' , 'vac' , 'pers' ) 
-			} else {
-				filetypes <- c( 'occ' , 'vac' , 'per' , 'ni' )
-			}
-			
-			prefix <- ifelse( year > 2008 , paste0( "/uf_" , subyear ) , "/lng08" )
-			
-			# loop through each available filetype
-			for ( filetype in filetypes ){
-
-				# construct the url of the file to download #
-
-				census_url <-
-					paste0( 
-						"https://www2.census.gov/programs-surveys/nychvs/datasets/" , 
-						year , 
-						"/microdata" ,
-						prefix , 
-						"_" , 
-						filetype , 
-						ifelse( year < 2011 , subyear , '' ) , 
-						ifelse( 
-							year < 2014 &
-							filetype %in% c( 'occ' , 'pers' , 'per' ) , 
-							'_rev' , 
-							'_web' 
-						) , 
-						ifelse( (year == 2014 & filetype != 'vac') |
-						         (year -== 2017), "_b" , "" ) ,
-						ifelse( 
-							( year == 2011 & filetype == 'vac' ) | 
-							( year == 2014 & filetype != 'vac' ) |
-							( year == 2017) , 
-							".txt" , 
-							".dat" 
-						)
-					)
-
-				# the `census.url` object now contains the complete filepath
-					
-				# construct the url of the SAS importation script #
-				
-				if( year < 2014 ){
-				
-					# massive thanx to http://furmancenter.org for providing these.
-					sas_script <- system.file("extdata", paste( "nychvs/furman/hvs" , subyear , filetype , "load.sas" , sep = "_" ) , package = "lodown")
-					
-					beginline <- 1
-					
-				} else {
-
-					# set the import script begin lines.
-					if(year == 2014 & filetype == 'occ' ) {
-						beginline <- 9 
-					} else if (year == 2014 & filetype == 'vac' ) {
-						beginline <- 561 
-					} else if (year == 2014 & filetype == 'pers' ){
-						beginline <- 413
-					} else if (year == 2017 & filetype == 'occ'){
-                				beginline <- 10
-          				} else if (year == 2017 & filetype == 'pers'){
-                				beginline <- 579
-          				} else if (year == 2017 & filetype == 'vac'){
-                				beginline <- 890
-					} else stop( "this filetype hasn't been implemented yet." )
-					
-					if (year == 2014){
-                				sas_script <- "https://www2.census.gov/programs-surveys/nychvs/datasets/2014/microdata/sas_import_program.txt"
-          				} else if ( year == 2017){
-               					 sas_script <- "https://www2.census.gov/programs-surveys/nychvs/datasets/2017/microdata/sas_import_program_17.txt"
-          				} else stop("Error. Unknown Year")
-        					}
-					
-				}
-
-	
-			
-			
-				this_catalog <-
-					data.frame(
-						type = filetype ,
-						year = year ,
-						full_url = census_url ,
-						sas_ri = sas_script ,
-						beginline = beginline ,
-						output_filename = paste0( output_dir , "/" , year , "/" , filetype , ".rds" ) ,
-						stringsAsFactors = FALSE
-					)
-
-				catalog <- rbind( catalog , this_catalog )
-			
-			}
-		
-		}
-	
-	
-		catalog
-
-	}
-
+	 function( data_name = "nychvs", output_dir , ...){
+    
+    catalog <- NULL
+    
+    for( year in c(2002, 2005, 2008, 2011, 2014, 2017)){
+      
+      subyear <- substr(year, 3, 4)
+      
+      if(year >= 2011){
+          filetypes <- c('occ' , 'vac' , 'pers')
+      } else {
+          filetypes <- c('occ' , 'vac' , 'per' , 'ni')
+      }
+      
+      prefix <- ifelse( year > 2008, paste0("/uf_", subyear) , "/lng08")
+      
+      for(filetype in filetypes){
+        
+        census_url <- paste0(
+          "https://www2.census.gov/programs-surveys/nychvs/datasets/",
+          year , 
+          "/microdata" , 
+          prefix ,
+          "_" , 
+          filetype, 
+          ifelse(year < 2011 , subyear, ''),
+          ifelse( year < 2014 & 
+                    filetype %in% c('occ' , 'per' , 'pers'),
+                  '_rev' , 
+                  '_web'
+                  ), 
+          ifelse( (year == 2014 & filetype != 'vac') |
+                  (year == 2017), "_b", ""),
+          
+          ifelse( (year == 2011 & filetype == 'vac')|
+                  (year == 2014 & filetype != 'vac')|
+                  (year == 2017), 
+                  ".txt" , ".dat"
+                  )
+                )
+        if( year < 2014){ #I am DIVERGING HERE 
+          
+          sas_script <- paste(system.file("extdata", paste( "nychvs/furman/hvs" , subyear , filetype , "load.sas" , sep = "_" ) , package = "lodown"))
+          
+          beginline <- 1
+          
+        } else {
+          if (year == 2014 & filetype == 'occ') {
+                beginline <- 9
+          } else if (year == 2014 & filetype == 'vac'){
+                beginline <- 561
+          } else if (year == 2014 & filetype == 'pers'){
+                beginline <- 413
+          } else if (year == 2017 & filetype == 'occ'){
+                beginline <- 10
+          } else if (year == 2017 & filetype == 'pers'){
+                beginline <- 579
+          } else if (year == 2017 & filetype == 'vac'){
+                beginline <- 890
+          } else stop("this filetype hasn't been implemented yet.")
+        
+          if (year == 2014){
+                sas_script <- "https://www2.census.gov/programs-surveys/nychvs/datasets/2014/microdata/sas_import_program.txt"
+          } else if ( year == 2017){
+                sas_script <- "https://www2.census.gov/programs-surveys/nychvs/datasets/2017/microdata/sas_import_program_17.txt"
+          } else stop("Error. Unknown Year")
+        }
+        this_catalog <- data.frame(
+          type = filetype,
+          year = year,
+          full_url = census_url,
+          sas_ri = sas_script,
+          beginline = beginline,
+          output_filename = paste0(output_dir, "/" , year, "/" , filetype, ".rds"),
+          stringsAsFactors = FALSE
+        )
+        
+        catalog <- rbind(catalog, this_catalog) #This may be where a problem arises
+      }
+    }
+      catalog
+  }
 
 lodown_nychvs <-
 	function( data_name = "nychvs" , catalog , ... ){
