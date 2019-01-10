@@ -40,13 +40,15 @@ get_catalog_nychvs <-
 							'_rev' , 
 							'_web' 
 						) , 
-						ifelse( year == 2014 & filetype != 'vac' , "_b" , "" ) ,
+						ifelse( (year == 2014 & filetype != 'vac') |
+						         (year -== 2017), "_b" , "" ) ,
 						ifelse( 
-							( year == 2011 & filetype == 'vac' ) | ( year == 2014 & filetype != 'vac' ) , 
+							( year == 2011 & filetype == 'vac' ) | 
+							( year == 2014 & filetype != 'vac' ) |
+							( year == 2017) , 
 							".txt" , 
 							".dat" 
-						),
-						ifelse( year == 2017, "_b.txt", "")
+						)
 					)
 
 				# the `census.url` object now contains the complete filepath
